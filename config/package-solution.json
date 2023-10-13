@@ -1,0 +1,40 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/spfx-build/package-solution.schema.json",
+  "solution": {
+    "name": "gestao-ferias-view-rh-client-side-solution",
+    "id": "a06dbbc1-2427-40d1-ae93-a3ca92fe65f9",
+    "version": "1.0.0.0",
+    "includeClientSideAssets": true,
+    "skipFeatureDeployment": true,
+    "isDomainIsolated": false,
+    "developer": {
+      "name": "",
+      "websiteUrl": "",
+      "privacyUrl": "",
+      "termsOfUseUrl": "",
+      "mpnId": "Undefined-1.18.0"
+    },
+    "metadata": {
+      "shortDescription": {
+        "default": "gestao-ferias-view-rh description"
+      },
+      "longDescription": {
+        "default": "gestao-ferias-view-rh description"
+      },
+      "screenshotPaths": [],
+      "videoUrl": "",
+      "categories": []
+    },
+    "features": [
+      {
+        "title": "gestao-ferias-view-rh Feature",
+        "description": "The feature that activates elements of the gestao-ferias-view-rh solution.",
+        "id": "1305d4ac-dfda-4865-8262-7851897012bf",
+        "version": "1.0.0.0"
+      }
+    ]
+  },
+  "paths": {
+    "zippedPackage": "solution/gestao-ferias-view-rh.sppkg"
+  }
+}

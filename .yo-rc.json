@@ -1,0 +1,21 @@
+{
+  "@microsoft/generator-sharepoint": {
+    "plusBeta": false,
+    "isCreatingSolution": true,
+    "nodeVersion": "16.13.2",
+    "sdksVersions": {
+      "@microsoft/microsoft-graph-client": "3.0.2",
+      "@microsoft/teams-js": "2.12.0"
+    },
+    "version": "1.18.0",
+    "libraryName": "gestao-ferias-view-rh",
+    "libraryId": "a06dbbc1-2427-40d1-ae93-a3ca92fe65f9",
+    "environment": "spo",
+    "packageManager": "npm",
+    "solutionName": "gestao-ferias-view-rh",
+    "solutionShortDescription": "gestao-ferias-view-rh description",
+    "skipFeatureDeployment": true,
+    "isDomainIsolated": false,
+    "componentType": "webpart"
+  }
+}
