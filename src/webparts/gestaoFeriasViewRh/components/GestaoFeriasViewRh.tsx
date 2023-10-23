@@ -6,15 +6,7 @@ import { useSolicitacaoFerias } from '../hooks/useSolicitacoesFerias';
 
 export default function GestaoFeriasViewRh(props: IGestaoFeriasViewRhProps): JSX.Element {
   const items = useControleFerias().getItems({});
-  const anoAtual = new Date().getFullYear();
-  const itemsPeriodoAtual = useSolicitacaoFerias().getItems({
-    filter: {
-      PeriodoAquisitivo: {
-        gt: `'${new Date(anoAtual, 0, 1).toISOString()}'`,
-        lt: `'${new Date(anoAtual, 11, 31).toISOString()}'`
-      }
-    }
-  });
+  const solicitacaoFeriasItems = useSolicitacaoFerias().getItems({});
 
   const columns: IColumn[] = React.useMemo(() => {
     return [
@@ -25,7 +17,9 @@ export default function GestaoFeriasViewRh(props: IGestaoFeriasViewRhProps): JSX
         maxWidth: 150,
         onRender: (item: ControleFerias) => {
           const saldoDias = parseInt(item.SaldoDias)
-          const hasItemPeriodoAtual = itemsPeriodoAtual.find((itemPeriodoAtual) => itemPeriodoAtual.Author.Title === item.NomeColaborador.NAME_EMPLOYEE)
+          const userItems = solicitacaoFeriasItems.filter((solicitacaoFeriasItem) => solicitacaoFeriasItem.Author.Title === item.NomeColaborador.NAME_EMPLOYEE)
+          const anoAtual = new Date(item.InicioPeriodoAtual).getFullYear()
+          const hasItemPeriodoAtual = userItems.find((userItem) => new Date(userItem.PeriodoAquisitivo).getFullYear() === anoAtual)
 
           let style: IStyle = {
             borderRadius: '1rem',
@@ -137,7 +131,10 @@ export default function GestaoFeriasViewRh(props: IGestaoFeriasViewRhProps): JSX
         minWidth: 100,
         maxWidth: 200,
         onRender: (item: ControleFerias) => {
-            const hasItemPeriodoAtual = itemsPeriodoAtual.find((itemPeriodoAtual) => itemPeriodoAtual.Author.Title === item.NomeColaborador.NAME_EMPLOYEE)
+            const userItems = solicitacaoFeriasItems.filter((solicitacaoFeriasItem) => solicitacaoFeriasItem.Author.Title === item.NomeColaborador.NAME_EMPLOYEE)
+            const anoAtual = new Date(item.InicioPeriodoAtual).getFullYear()
+            const hasItemPeriodoAtual = userItems.find((userItem) => new Date(userItem.PeriodoAquisitivo).getFullYear() === anoAtual)
+            
             const listId = '3f6aca03-ed95-49d7-91a4-aae35eaa1958'
             const styles = {
               fontSize: '1rem'
@@ -156,7 +153,7 @@ export default function GestaoFeriasViewRh(props: IGestaoFeriasViewRhProps): JSX
         }
     },
     ];
-  }, [itemsPeriodoAtual]);
+  }, [solicitacaoFeriasItems]);
 
   return (
     <Stack>
