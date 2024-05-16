@@ -1,7 +1,7 @@
+import { Colaborador } from "../../../types/Colaborador";
+import { SolicitacaoFerias } from "../../../types/SolicitacaoFeiras";
+
 export interface IGestaoFeriasViewRhProps {
-  colaboradores: {
-    Id: number;
-    Title: string;
-    DataAdmissao: string;
-  }[];
+  colaboradores: Colaborador[];
+  solicitacaoFerias: SolicitacaoFerias[];
 }
