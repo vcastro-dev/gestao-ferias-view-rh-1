@@ -8,40 +8,42 @@ import {
   Stack,
   Text,
 } from "@fluentui/react";
-import {
-  SolicitacaoFerias,
-  useSolicitacaoFerias,
-} from "../hooks/useSolicitacoesFerias";
+import { SolicitacaoFerias } from "../../../types/SolicitacaoFeiras";
+import { Colaborador } from "../../../types/Colaborador";
 
-// const orderById = (a: SolicitacaoFerias, b: SolicitacaoFerias) => {
-//   return a.Id - b.Id;
-// };
+const orderById = (a: SolicitacaoFerias, b: SolicitacaoFerias): number => {
+  return a.Id - b.Id;
+};
 
-// const groupSolicitacaoFeirasByColaboradorId = (
-//   solicitacaoFeriasItems: SolicitacaoFerias[]
-// ): { [key: number]: SolicitacaoFerias[] } => {
-//   return solicitacaoFeriasItems.reduce((acc, solicitacaoFeriasItem) => {
-//     const key = solicitacaoFeriasItem.ColaboradorId;
+const groupSolicitacaoFeirasByColaboradorId = (
+  solicitacaoFerias: SolicitacaoFerias[],
+  colaboradores: Colaborador[]
+): { [key: number]: SolicitacaoFerias[] } => {
+  return colaboradores.reduce((acc, colaborador) => {
+    const solicitacoesColaborador = solicitacaoFerias.filter(
+      (solicitacaoFerias) => solicitacaoFerias.ColaboradorId === colaborador.Id
+    );
 
-//     if (!acc[key]) {
-//       acc[key] = [];
-//     }
+    solicitacoesColaborador.sort(orderById);
 
-//     acc[key].push(solicitacaoFeriasItem);
-//     acc[key].sort(orderById);
+    const key = colaborador.Id;
+    acc[key] = solicitacoesColaborador;
 
-//     return acc;
-//   }, {} as { [key: number]: SolicitacaoFerias[] });
-// };
+    return acc;
+  }, {} as { [key: number]: SolicitacaoFerias[] });
+};
 
 export default function GestaoFeriasViewRh(
   props: IGestaoFeriasViewRhProps
 ): JSX.Element {
-  //const { colaboradores } = props;
-  const solicitacaoFeriasItems = useSolicitacaoFerias().getItems({});
-  // const groupedSolicitacaoFeriasItems = React.useMemo(() => {
-  //   return groupSolicitacaoFeirasByColaboradorId(solicitacaoFeriasItems);
-  // }, [solicitacaoFeriasItems]);
+  const { colaboradores, solicitacaoFerias } = props;
+
+  const solicitacaoFeriasGrouped = React.useMemo(() => {
+    return groupSolicitacaoFeirasByColaboradorId(
+      solicitacaoFerias,
+      colaboradores
+    );
+  }, [solicitacaoFerias]);
 
   const columns: IColumn[] = React.useMemo(() => {
     return [
@@ -50,30 +52,26 @@ export default function GestaoFeriasViewRh(
         name: "Status",
         minWidth: 100,
         maxWidth: 150,
-        onRender: (item: SolicitacaoFerias) => {
-          const periodoAquisitivo = new Date(item.PeriodoAquisitivo);
+        onRender: (colaborador: Colaborador) => {
+          const item = solicitacaoFeriasGrouped[colaborador.Id][0];
+          const periodoAquisitivo = item
+            ? new Date(item.PeriodoAquisitivo)
+            : new Date(colaborador.DataAdmissao);
           const saldoDias = new Date().getTime() - periodoAquisitivo.getTime();
           let saldoDiasInDays =
             Math.floor(saldoDias / (1000 * 3600 * 24)) / 365;
           saldoDiasInDays = Math.floor(saldoDiasInDays);
           saldoDiasInDays *= 30;
 
-          const fimPeriodoAtual = new Date(item.PeriodoAquisitivo);
+          const fimPeriodoAtual = new Date(periodoAquisitivo);
           fimPeriodoAtual.setDate(fimPeriodoAtual.getDate() + 365);
 
           const fimPeriodoAtualMaiorQueHoje =
             fimPeriodoAtual.getTime() > new Date().getTime();
 
-          const userItems = solicitacaoFeriasItems.filter(
-            (solicitacaoFeriasItem) =>
-              solicitacaoFeriasItem.ColaboradorId === item.ColaboradorId || ""
-          );
-
           const anoAtual = new Date().getFullYear();
-          const hasItemPeriodoAtual = userItems.find(
-            (userItem) =>
-              new Date(userItem.PeriodoAquisitivo).getFullYear() === anoAtual
-          );
+          const hasItemPeriodoAtual =
+            new Date(periodoAquisitivo).getFullYear() === anoAtual;
 
           let style: IStyle = {
             borderRadius: "1rem",
@@ -119,8 +117,8 @@ export default function GestaoFeriasViewRh(
         fieldName: "Title",
         minWidth: 100,
         maxWidth: 150,
-        onRender: (item: SolicitacaoFerias) => {
-          return <span>{item.Colaborador?.Title || ""}</span>;
+        onRender: (colaborador: Colaborador) => {
+          return <span>{colaborador?.Title || ""}</span>;
         },
       },
 
@@ -130,10 +128,12 @@ export default function GestaoFeriasViewRh(
         fieldName: "InicioPeriodoAtual",
         minWidth: 100,
         maxWidth: 150,
-        onRender: (item: SolicitacaoFerias) => {
-          return (
-            <span>{new Date(item.PeriodoAquisitivo).toLocaleDateString()}</span>
-          );
+        onRender: (colaborador: Colaborador) => {
+          const item = solicitacaoFeriasGrouped[colaborador.Id][0];
+          const periodoAquisitivo = item
+            ? new Date(item.PeriodoAquisitivo)
+            : new Date(colaborador.DataAdmissao);
+          return <span>{periodoAquisitivo.toLocaleDateString()}</span>;
         },
       },
 
@@ -143,8 +143,12 @@ export default function GestaoFeriasViewRh(
         fieldName: "FimPeriodoAtual",
         minWidth: 100,
         maxWidth: 150,
-        onRender: (item: SolicitacaoFerias) => {
-          const fimPeriodoAtual = new Date(item.PeriodoAquisitivo);
+        onRender: (colaborador: Colaborador) => {
+          const item = solicitacaoFeriasGrouped[colaborador.Id][0];
+          const periodoAquisitivo = item
+            ? new Date(item.PeriodoAquisitivo)
+            : new Date(colaborador.DataAdmissao);
+          const fimPeriodoAtual = new Date(periodoAquisitivo);
           fimPeriodoAtual.setDate(fimPeriodoAtual.getDate() + 365);
 
           return <span>{fimPeriodoAtual.toLocaleDateString()}</span>;
@@ -156,8 +160,12 @@ export default function GestaoFeriasViewRh(
         fieldName: "DataLimiteAgendarFerias",
         minWidth: 100,
         maxWidth: 150,
-        onRender: (item: SolicitacaoFerias) => {
-          const dataLimiteAgendarFerias = new Date(item.PeriodoAquisitivo);
+        onRender: (colaborador: Colaborador) => {
+          const item = solicitacaoFeriasGrouped[colaborador.Id][0];
+          const periodoAquisitivo = item
+            ? new Date(item.PeriodoAquisitivo)
+            : new Date(colaborador.DataAdmissao);
+          const dataLimiteAgendarFerias = new Date(periodoAquisitivo);
           dataLimiteAgendarFerias.setDate(
             dataLimiteAgendarFerias.getDate() + 320
           );
@@ -173,8 +181,12 @@ export default function GestaoFeriasViewRh(
         name: "Data limite para sair de férias",
         minWidth: 100,
         maxWidth: 100,
-        onRender: (item: SolicitacaoFerias) => {
-          const dataLimiteSairFerias = new Date(item.PeriodoAquisitivo);
+        onRender: (colaborador: Colaborador) => {
+          const item = solicitacaoFeriasGrouped[colaborador.Id][0];
+          const periodoAquisitivo = item
+            ? new Date(item.PeriodoAquisitivo)
+            : new Date(colaborador.DataAdmissao);
+          const dataLimiteSairFerias = new Date(periodoAquisitivo);
           dataLimiteSairFerias.setDate(
             dataLimiteSairFerias.getDate() + 365 * 2 - 1
           );
@@ -190,8 +202,11 @@ export default function GestaoFeriasViewRh(
         fieldName: "SaldoDias",
         minWidth: 100,
         maxWidth: 100,
-        onRender: (item: SolicitacaoFerias) => {
-          const periodoAquisitivo = new Date(item.PeriodoAquisitivo);
+        onRender: (colaborador: Colaborador) => {
+          const item = solicitacaoFeriasGrouped[colaborador.Id][0];
+          const periodoAquisitivo = item
+            ? new Date(item.PeriodoAquisitivo)
+            : new Date(colaborador.DataAdmissao);
           const saldoDias = new Date().getTime() - periodoAquisitivo.getTime();
           let saldoDiasInDays =
             Math.floor(saldoDias / (1000 * 3600 * 24)) / 365;
@@ -206,17 +221,14 @@ export default function GestaoFeriasViewRh(
         name: "Ver agendamento",
         minWidth: 100,
         maxWidth: 200,
-        onRender: (item: SolicitacaoFerias) => {
-          const userItems = solicitacaoFeriasItems.filter(
-            (solicitacaoFeriasItem) =>
-              solicitacaoFeriasItem.Author.Title === item.Colaborador?.Title ||
-              ""
-          );
-          const anoAtual = new Date(item.PeriodoAquisitivo).getFullYear();
-          const hasItemPeriodoAtual = userItems.find(
-            (userItem) =>
-              new Date(userItem.PeriodoAquisitivo).getFullYear() === anoAtual
-          );
+        onRender: (colaborador: Colaborador) => {
+          const item = solicitacaoFeriasGrouped[colaborador.Id][0];
+          const periodoAquisitivo = item
+            ? new Date(item.PeriodoAquisitivo)
+            : new Date(colaborador.DataAdmissao);
+          const anoAtual = new Date(periodoAquisitivo).getFullYear();
+          const hasItemPeriodoAtual =
+            new Date(periodoAquisitivo).getFullYear() === anoAtual;
 
           const listId = "3f6aca03-ed95-49d7-91a4-aae35eaa1958";
           const styles = {
@@ -231,7 +243,7 @@ export default function GestaoFeriasViewRh(
                 style={styles}
                 onClick={() =>
                   window.open(
-                    `/sites/newportal/_layouts/15/SPListForm.aspx?PageType=4&List=${listId}&ID=${hasItemPeriodoAtual.Id}`
+                    `/sites/newportal/_layouts/15/SPListForm.aspx?PageType=4&List=${listId}&ID=${item.Id}`
                   )
                 }
               />
@@ -240,15 +252,11 @@ export default function GestaoFeriasViewRh(
         },
       },
     ];
-  }, [solicitacaoFeriasItems]);
+  }, [solicitacaoFerias]);
 
   return (
     <Stack>
-      <DetailsList
-        columns={columns}
-        items={solicitacaoFeriasItems}
-        selectionMode={0}
-      />
+      <DetailsList columns={columns} items={colaboradores} selectionMode={0} />
     </Stack>
   );
 }
